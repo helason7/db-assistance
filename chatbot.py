@@ -7,7 +7,9 @@ from langchain_core.messages import HumanMessage, AIMessage  # For message forma
 from langchain_core.tools import tool  # For creating tools
 
 # Import our database tools
-from db_tools import text_to_sql, get_database_info
+from db_tools import text_to_sql, get_database_info, getAllDB
+
+db_path = ""
 # Define the tools using the LangChain tool decorator
 @tool
 def execute_sql(sql_query: str):
@@ -18,7 +20,7 @@ def execute_sql(sql_query: str):
         sql_query: The SQL query to execute. Must be a valid SQL query string.
             For example: "SELECT * FROM customers", "SELECT p.name, SUM(si.quantity) as total_sold FROM sale_items si JOIN products p ON si.product_id = p.product_id GROUP BY p.product_id ORDER BY total_sold DESC", etc.
     """
-    result = text_to_sql(sql_query)
+    result = text_to_sql(sql_query, db_path)
     # Format the result to clearly show the executed SQL query
     formatted_result = f"```sql\n{sql_query}\n```\n\nQuery Results:\n{result}"
     return formatted_result
@@ -30,7 +32,7 @@ def get_schema_info():
     This tool returns the schema of all tables and sample data (first 3 rows) from each table.
     Use this tool before writing SQL queries to understand the database structure.
     """
-    return get_database_info()
+    return get_database_info(db_path)
 
 def run():
     
@@ -43,6 +45,14 @@ def run():
 
     # Create a sidebar section for app settings using 'with st.sidebar:'
     with st.sidebar:
+        st.markdown("---")
+        db_folder = os.path.join(os.path.dirname(__file__) or ".", "db")
+        db_files = [f for f in os.listdir(db_folder) if f.endswith('.db')]
+        dbs = getAllDB(db_folder, db_files)
+        # Let user select a database to inspect
+        sel = st.selectbox("Select a database for context", [r['filename'] for r in dbs])
+        global db_path
+        db_path = sel
         # Add a subheader to organize the settings
         st.subheader("Google API Settings")
         
