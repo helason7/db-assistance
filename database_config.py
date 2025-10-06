@@ -2,6 +2,7 @@
 from db_tools import init_database, create_table, getAllDB, getTablesFromDB, getDataFromTable, delete_db_file
 import streamlit as st
 import os
+import chatbot
 
 
 def db_init():
@@ -165,7 +166,7 @@ def browseDB():
 
 def run():
     # Create a sidebar section for app settings and page navigation
-    pages = ["DB Settings", "Browse", "Others"]
+    pages = ["DB Settings", "Browse", "Others", "Chatbot"]
 
     if "page_idx" not in st.session_state:
         st.session_state.page_idx = 0
@@ -191,8 +192,14 @@ def run():
         db_init()
     elif st.session_state.page_idx == 1:
         browseDB()
-    else:
+    elif st.session_state.page_idx == 2:
         browseDB()
+    else:
+        # Chatbot page
+        try:
+            chatbot.run()
+        except Exception as e:
+            st.error(f"Failed to launch chatbot: {e}")
 
 # end of file
 
